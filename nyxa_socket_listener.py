@@ -1,6 +1,4 @@
 import socket
-from socket import command_interaction
-
 
 class SocketListener:
     def __init__(self,ip,port):
