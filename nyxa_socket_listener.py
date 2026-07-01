@@ -17,11 +17,14 @@ class SocketListener:
         json_data = json.dumps(data)
         self.connection.send(json_data)
 
+    def json_recv(self):
+        json_data = self.connection.recv(1024)
+        return json.loads(json_data)
 
 
     def command_interaction(self,command_input):
         self.json_send(command_input)
-        return self.connection.recv(1024)
+        return self.json_recv()
 
     def listening(self):
         while True:
