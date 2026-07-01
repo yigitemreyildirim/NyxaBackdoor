@@ -1,4 +1,7 @@
 import socket
+import json
+
+
 
 class SocketListener:
     def __init__(self,ip,port):
@@ -10,8 +13,14 @@ class SocketListener:
         (self.connection, address) = listener.accept()
         print("Connected from " + str(address))
 
+    def json_send(self,data):
+        json_data = json.dumps(data)
+        self.connection.send(json_data)
+
+
+
     def command_interaction(self,command_input):
-        self.connection.send(command_input)
+        self.json_send(command_input)
         return self.connection.recv(1024)
 
     def listening(self):
