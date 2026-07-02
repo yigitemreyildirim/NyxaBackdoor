@@ -60,5 +60,5 @@ class SocketListener:
                 command_output = "Error"
             print(command_output)
 
-my_socket_listener = SocketListener("10.0.2.15",8080)
+my_socket_listener = SocketListener("192.168.1.59",8080)
 my_socket_listener.start_listener()
